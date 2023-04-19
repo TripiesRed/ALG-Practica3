@@ -24,7 +24,7 @@ vector<vector<float>> VorazCatering (vector<float> comensales, int c){
 
     vector<vector<float>> camareros;
     vector<float> camareroIesimo;
-    //vector<float> times2;
+    vector<float> times2;
     float contador = 0;
     int comensalIesimo = 0;
 
@@ -38,18 +38,17 @@ vector<vector<float>> VorazCatering (vector<float> comensales, int c){
             camareroIesimo.push_back(comensales[comensalIesimo]);
             contador += comensales[comensalIesimo];
             comensalIesimo++;
-
         }
-
+        
         camareros.push_back(camareroIesimo);
-        //times2.push_back(contador);
+        times2.push_back(contador);
         contador = 0;
         camareroIesimo.clear();
 
     }
 
-    //cout << "Tiempos: " << times2[0] << " " << times2[1] << " "
-        //<< times2[2] << " " << endl;
+    cout << "Tiempos: " << times2[0] << " " << times2[1] << " "
+         << times2[2] << " " << endl;
 
     return camareros;
 }
@@ -81,7 +80,7 @@ int main(){
         time += comensal;
     }
 
-    float maxTimeEach = time / camareros.size() + 1;
+    float maxTimeEach = time / camareros.size();
     int cont = 0, comensalIesimo = 0;
     vector<int> times;
 
@@ -101,19 +100,12 @@ int main(){
         cont = 0;
     }
 
-    cout << "Maximo Tiempo: " << maxTimeEach << endl;
-
-    /*
-    cout << "Comensales: " << endl;
-    for (int i = 0; i < camareros.size(); i++)
-        for(int j = 0; j < camareros[i].size(); j++)
-            cout << camareros[i].at(j) << " ";
-    */
+    cout << "Maximo Tiempo: " << maxTimeEach << endl;   
 
     cout << "\nTamanios: " << camareros[0].size() << " " << camareros[1].size() << " "
          << camareros[2].size() << " " << endl;
 
-    cout << "Tiempos: " << times[0] << " " << times[1] << " "
+    cout << "TiemposU: " << times[0] << " " << times[1] << " "
          << times[2] << " " << endl;
     
 
