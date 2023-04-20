@@ -26,26 +26,30 @@ vector<vector<float>> VorazCatering (vector<float> comensales, int c){
     vector<float> camareroIesimo;
     vector<float> times2;
     float contador = 0;
-    int comensalIesimo = 0;
+    int j;
 
     //Asignamos a cada camarero los comensales que le corresponden
     // siempre y cuando el tiempo total que tarda el camarero en atenderlos
     // a todos no supere maxTimeEach
     for(int i = 0; i < c; i++){
-
-        while(contador < maxTimeEach && comensalIesimo < comensales.size()){
-
-            camareroIesimo.push_back(comensales[comensalIesimo]);
-            contador += comensales[comensalIesimo];
-            comensalIesimo++;
-        }
         
-        camareros.push_back(camareroIesimo);
-        times2.push_back(contador);
-        contador = 0;
-        camareroIesimo.clear();
+        for(int j = i; j < comensales.size(); j += c){
 
+            camareroIesimo.push_back(comensales[j]);
+        }
+
+        camareros.push_back(camareroIesimo);
+        camareroIesimo.clear();
+        
     }
+
+    for(int i = 0; i < c; i++){
+        contador = 0;
+        for(int j = 0; j < camareros[i].size(); j++)
+            contador += camareros[i][j];
+        times2.push_back(contador);
+    }
+    
 
     cout << "Tiempos: " << times2[0] << " " << times2[1] << " "
          << times2[2] << " " << endl;
