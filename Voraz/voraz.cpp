@@ -37,11 +37,7 @@ vector<vector<float>> VorazCatering (vector<float> comensales, int c){
     sort(comensales.begin(), comensales.end());
 
     vector<vector<float>> camareros; //Vector de camareros
-    vector<float> camareroIesimo; //Vector de comensales asignados a un camarero 
-    //Auxiliar para calcular el tiempo que tarda cada camarero
-    //float contador = 0;
-    //vector<float> times; 
-    
+    vector<float> camareroIesimo; //Vector de comensales asignados a un camarero  
 
     //Asignamos a cada camarero los comensales que le corresponden
     // siempre y cuando el tiempo total que tarda el camarero en atenderlos
@@ -51,24 +47,14 @@ vector<vector<float>> VorazCatering (vector<float> comensales, int c){
         for(int j = i; j < comensales.size(); j += c){
 
             camareroIesimo.push_back(comensales[j]);
-            //contador += comensales[j];
 
         }
 
         camareros.push_back(camareroIesimo); //Añadimos el camarero          
-        camareroIesimo.clear(); //Borramos para inicializar un nuevo camarero
-        //times.push_back(contador); 
-        //contador = 0; 
+        camareroIesimo.clear(); //Borramos para inicializar un nuevo camarero 
         
 
     }
-
-    //Muestra los tiempos que tarda cada camarero
-    /*
-    cout << "Timepos: " << endl;
-    for(int i = 0; i < times.size(); i++)
-        cout << times[i] << " ";
-    */
 
     return camareros;
 }
@@ -85,6 +71,7 @@ int main (int argc, char** argv) {
     vector<float> comensales;
     string line;
     int ncamareros = stoi(argv[1]); // Leemos número de camareros
+    cout << "Camareros -> " << ncamareros << endl;
 
     //ENTRADA DEL PROBLEMA
 
@@ -139,25 +126,28 @@ int main (int argc, char** argv) {
     //SALIDA DEL PROGRAMA (Solución al Problema)
 
     //Abrimos el fichero de salida
-    ofstream ofile(argv[2]);
+    ofstream ofile(argv[3]);
     
     if (!ofile.is_open()) {
         cerr << "No se pudo abrir el fichero de salida" << endl;
         return 1;
     }
     
-    float time = 0;
+    float time = 0, totalTime = 0;
     vector<float> allTimes;
     for(int i = 0; i < sol.size(); i++){
 
         for(int j = 0; j < sol[i].size(); j++)
             time += sol[i][j];
 
-        line = "Tiempo de servicio Camarero " + to_string(i) + ":" + to_string(time) + " s\n";
+        line = to_string(i) + ": " + to_string(time) + " s\n";
         ofile << line;
         allTimes.push_back(time);
+        totalTime += time;
         time = 0;
     }
+
+    cout << "Tiempo Maximo medio: " << totalTime/ncamareros << endl;
     
     //Cerramos el fichero
     ofile.close();

@@ -33,13 +33,12 @@ int main(int argc, char *argv[])
         std::uniform_int_distribution<> dis(1, 10000); // Distribución uniforme entre -100 y 100
 
         int num1 = dis(gen);
-        int num2 = dis(gen);
 
         if(i == num_lines - 1){
-            file << num1 << " " << num2;
+            file << num1;
         }
         else{
-            file << num1 << " " << num2 << "\n";
+            file << num1 << "\n";
         }
     }
 
