@@ -71,7 +71,7 @@ int main (int argc, char** argv) {
     vector<float> comensales;
     string line;
     int ncamareros = stoi(argv[1]); // Leemos número de camareros
-    cout << "Camareros -> " << ncamareros << endl;
+    //cout << "Camareros -> " << ncamareros << endl;
 
     //ENTRADA DEL PROBLEMA
 
@@ -119,8 +119,7 @@ int main (int argc, char** argv) {
     t_despues = high_resolution_clock::now();
     
     transcurrido = duration_cast<duration<double>>(t_despues - t_antes);
-    cout << comensales.size() << "\t" << ncamareros << "\t" 
-         << transcurrido.count() << endl;
+    cout << comensales.size() << "\t" << transcurrido.count() << endl;
     
 
     //SALIDA DEL PROGRAMA (Solución al Problema)
@@ -147,7 +146,7 @@ int main (int argc, char** argv) {
         time = 0;
     }
 
-    cout << "Tiempo Maximo medio: " << totalTime/ncamareros << endl;
+    //cout << "Tiempo Maximo medio: " << totalTime/ncamareros << endl;
     
     //Cerramos el fichero
     ofile.close();

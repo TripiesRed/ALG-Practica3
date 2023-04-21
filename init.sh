@@ -9,18 +9,19 @@
 # 	2) Resolver el problema/caso con los algoritmos Dyv y Específico
 
 
-if (( $# > 2 || $# == 0 )); then echo "./init nombre_archivo <numero_puntos>"; exit
 
-elif (( $# == 2 ))
+if (( $# > 4 || $# < 3 )); then echo "./init nombre_archivo numero_camareros fichero_salida <numero_comensales>"; exit
+
+elif (( $# == 4 ))
 	then
 	make all
 	./Generador/datagen $2 $1
-	./Dyv/dyv $1
+	./Voraz/voraz $3 $1 $4
 	./Especifico/especifico $1
 	
-else (( $# == 1 ))
+else (( $# == 3 ))
 	make all
-	./Dyv/dyv $1
+	./Voraz/voraz $1 $2 $4
 	./Especifico/especifico $1
 	
 fi
