@@ -22,7 +22,7 @@ int main(int argc, char* argv[]) {
     set<pair<int, int>> lines;
 
     // Generar n líneas aleatorias únicas
-    while (lines.size() < n+1) {
+    while (lines.size() < n) {
         int a = dis(gen);
         int b = dis(gen);
         lines.insert({a, b});

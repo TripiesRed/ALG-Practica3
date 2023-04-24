@@ -1,10 +1,10 @@
 #!/bin/bash 
 #echo "" >> salida.dat
-i=1000
-while [ "$i" -le 25000 ]
+i=200
+while [ "$i" -le 5000 ]
 do
 	 ./Generador-pvc/datagen $i 
-    ./$1 $2 >> $1TablaDatos.dat
-      i=$(( $i + 1000 ))
+    ./$1 Generador-pvc/data >> $1TablaDatos.dat
+      i=$(( $i + 200 ))
 done
       
