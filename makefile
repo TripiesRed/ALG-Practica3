@@ -1,12 +1,14 @@
 CC = g++
 RM = rm -f
 VOR = Voraz/voraz
-GEN = Generador/data_generator
-DGEN = Generador/datagen
-OBJS = $(VOR).o $(GEN).o Pvc1/pvc1.o Pvc2/pvc2.o Pvc3/pvc3.o 
-EXEC = $(VOR) $(DGEN) Pvc1/pvc1 Pvc2/pvc2 Pvc3/pvc3
+GENV = Generador/generador_voraz
+GENPVC = Generador-pvc/generador_pvc
+DGEN1 = Generador/datagen
+DGEN2 = Generador-pvc/datagen
+OBJS = $(VOR).o $(GENV).o $(GENPVC).o Pvc1/pvc1.o Pvc2/pvc2.o Pvc3/pvc3.o 
+EXEC = $(VOR) $(DGEN1) $(DGEN2) Pvc1/pvc1 Pvc2/pvc2 Pvc3/pvc3
 
-all: pvc1 pvc2 pvc3 voraz datagen
+all: pvc1 pvc2 pvc3 voraz datagen1 datagen2
 
 pvc1: Pvc1/pvc1.o 
 	$(CC) Pvc1/pvc1.o -o Pvc1/pvc1
@@ -32,14 +34,20 @@ voraz: $(VOR).o
 voraz.o: $(VOR).cpp
 	$(CC) -o $(VOR).cpp
 
-datagen: $(GEN).o
-	$(CC) $(GEN).o -o $(DGEN)
+datagen1: $(GENV).o
+	$(CC) $(GENV).o -o $(DGEN1)
 
-data_generator.o: $(GEN).cpp
-	$(CC) -o $(GEN).cpp
+generador_voraz.o: $(GENV).cpp
+	$(CC) -o $(GENV).cpp
+
+datagen2: $(GENPVC).o
+	$(CC) $(GENPVC).o -o $(DGEN2)
+
+generador_pvc.o: $(GENPVC).cpp
+	$(CC) -o $(GENPVC).cpp
 	
 clean:
-	$(RM) $(OBJS) $(EXEC) Generador/data
+	$(RM) $(OBJS) $(EXEC) Generador/data Generador-pvc/data
 	
 cleanobj:
 	$(RM) $(OBJS)
