@@ -59,25 +59,15 @@ struct Edge
 
 };
 
-// Dadas dos aristas, comprueba si están unidas por alguno de sus extremos
-bool joined(Edge a, Edge b){
-	return a.A == b.A || a.B == b.B || a.A == b.B || a.B == b.A;
-}
-
 //Operadores para ordenar. Comprueba si el elemento más a la derecha es menor
 // que el elemento más a la izquierda
 bool operator<(const Edge& lhs, const Edge& rhs) {
 	return lhs.distancia < rhs.distancia;
 }
 
-// Comprueba si se forma un ciclo entre 3 aristas dadas
-bool thereIsACycle(Edge a, Edge b, Edge c){
-	bool theyAre = false;
-
-	if(joined(a, b) && joined(a,c) && joined(b,c))
-		theyAre = true;
-
-	return theyAre;
+// Dadas dos aristas, comprueba si están unidas por alguno de sus extremos
+bool joined(Edge a, Edge b){
+	return a.A == b.A || a.B == b.B || a.A == b.B || a.B == b.A;
 }
 
 // Función auxiliar que dado un vector de Edge y un objeto edge, indica
@@ -93,40 +83,80 @@ bool haveIt(vector<Edge> v, Edge l){
 		if(v[i] == l || v[i]== e)
 			found = true;
 
-		else{
-			for(int j = i+1; j < size && !found; j++)
-				if(thereIsACycle(v[i], v[j], l))
-					found = true;
-		}
 	}
 
 	return found;
 }
 
 // Segunda heurística.
-vector<Edge> SecondAprox(vector<vector<double>> distances, vector<Location> locations){
+vector<Edge> SecondAprox(vector<Location> locations){
 
-    int n = distances.size();
+    int n = locations.size();
     vector<Edge> edges, path;
+    vector<pair<Location,int>> related;
 
     for (int i = 0; i < n; i++) {
         for (int j = i + 1; j < n; j++) {
             edges.emplace_back(locations[i], locations[j]);
+            
         }
+        related.emplace_back(locations[i], 0);
     }
 	
 	//Ordenamos el vector de aristas de menor a mayor
     sort(edges.begin(), edges.end());
+    path.push_back(edges[0]);
 
+    //Recorremos el vector de aristas buscando la más corta tal que 
+    // verifique las condiciones, para introducirla a la solución
 	for(const auto e : edges){
-		if(path.size() == n-1)
-			break;
-		if(!haveIt(path, e))
-			path.push_back(e);
+
+		if(path.size() >= n)break;
+
+        bool createsCycle = false;
+        bool moreThanTwo = false;
+        bool alreadyIn = false;
+
+        // Comprueba si se crea un ciclo
+		for (Edge t : path)
+        {
+            if (joined(t, e) && path.size() < n-1)
+            {
+                createsCycle = true;
+                break;
+            }
+        }
+
+        // Comprueba si una arista está ya en path 
+        for (Edge t : path)
+        {   
+            Edge prueba(t.B, t.A);
+            if (t == e || prueba == e)
+            {
+                alreadyIn = true;
+                break;
+            }
+        }
+
+        int degreeA = 0;
+        int degreeB = 0;
+
+        // Comprueba si un nodo de 
+        for (Edge t : path)
+        {
+            if (t.A == e.A || t.B == e.A) degreeA++;
+            if (t.A == e.B || t.B == e.B) degreeB++;
+        }
+
+        if (!createsCycle && !(degreeA > 2 || degreeB > 2) && !alreadyIn){
+            path.push_back(e);
+        }
+        
 	}
 
 	return path;
 }
+
 
 int main(int argc, char *argv[]){
 
@@ -156,34 +186,19 @@ int main(int argc, char *argv[]){
         Customers.push_back(customer);
     }
 
-	//Creamos una matriz de aristas
-	vector<vector<double>> grafo;
-	vector<double> fila;
-	Edge arista;
-
-	for(int i = 0; i < Customers.size(); i++){
-		arista.A = Customers[i];
-		for(int j = 0; j < Customers.size(); j++){
-			arista.B = Customers[j]; 
-			arista.distancia = distance(arista.A, arista.B);
-
-			fila.push_back(arista.distancia);
-			//cout << "Fila " << i << " " << fila.size() << endl;
-		}
-		grafo.push_back(fila);
-		fila.clear();
-	}
-	//cout << "TAM GRAPH: " << grafo.size() << endl; 
-
     vector<Edge> pru;
 
     auto start = high_resolution_clock::now(); // Marca de tiempo inicial
-    pru = SecondAprox(grafo, Customers);
+    pru = SecondAprox(Customers);
     auto stop = high_resolution_clock::now(); // Marca de tiempo final
 
     auto transcurrido = duration_cast<duration<double>>(stop - start);
     cout << Customers.size() << "\t" << transcurrido.count() << endl;
 
+    for(auto p : pru){
+        cout << p.A.x << ", " << p.A.y << endl;
+        cout << p.B.x << ", " << p.B.y << endl;
+    }
     //auto duration = duration_cast<seconds>(stop - start); // Cálculo de la duración en segundos
     //cout << "Tiempo de ejecución: " << duration.count() << " segundos." << endl;
 

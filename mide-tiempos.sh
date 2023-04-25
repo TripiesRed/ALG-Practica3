@@ -1,10 +1,10 @@
 #!/bin/bash 
 #echo "" >> salida.dat
-i=100000
-while [ "$i" -le 2500000 ]
+i=10000
+while [ "$i" -le 250000 ]
 do
-	 ./Generador/datagen1 $i $3
-    ./$1 $2 $3 /dev/null >> $1TablaDatos$2.dat
-      i=$(( $i + 100000 ))
+	 ./Generador/datagen $i $3
+    ./$1 $2 $3 /dev/null >> $1TablaDatos$2Comensales.dat
+      i=$(( $i + 10000 ))
 done
       

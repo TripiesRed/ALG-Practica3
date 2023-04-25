@@ -119,7 +119,7 @@ int main (int argc, char** argv) {
     t_despues = high_resolution_clock::now();
     
     transcurrido = duration_cast<duration<double>>(t_despues - t_antes);
-    cout << comensales.size() << "\t" << transcurrido.count() << endl;
+   // cout << comensales.size() << "\t" << transcurrido.count() << endl;
     
 
     //SALIDA DEL PROGRAMA (Solución al Problema)
@@ -146,7 +146,7 @@ int main (int argc, char** argv) {
         time = 0;
     }
 
-    //cout << "Tiempo Maximo medio: " << totalTime/ncamareros << endl;
+    cout << ncamareros << "\t" << totalTime/ncamareros << endl;
     
     //Cerramos el fichero
     ofile.close();
