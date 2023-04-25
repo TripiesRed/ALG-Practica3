@@ -59,14 +59,29 @@ struct Edge
 
 };
 
+// Dadas dos aristas, comprueba si están unidas por alguno de sus extremos
+bool joined(Edge a, Edge b){
+	return a.A == b.A || a.B == b.B || a.A == b.B || a.B == b.A;
+}
+
 //Operadores para ordenar. Comprueba si el elemento más a la derecha es menor
 // que el elemento más a la izquierda
 bool operator<(const Edge& lhs, const Edge& rhs) {
 	return lhs.distancia < rhs.distancia;
 }
 
-// Función auxiliar que dado un vector de Location y un objeto location, indica
-// si ya la tiene incluida.
+// Comprueba si se forma un ciclo entre 3 aristas dadas
+bool thereIsACycle(Edge a, Edge b, Edge c){
+	bool theyAre = false;
+
+	if(joined(a, b) && joined(a,c) && joined(b,c))
+		theyAre = true;
+
+	return theyAre;
+}
+
+// Función auxiliar que dado un vector de Edge y un objeto edge, indica
+// si ya tiene incluida la arista.
 bool haveIt(vector<Edge> v, Edge l){
 	bool found= false;
 	int size = v.size();
@@ -77,6 +92,12 @@ bool haveIt(vector<Edge> v, Edge l){
 		// dos sentidos
 		if(v[i] == l || v[i]== e)
 			found = true;
+
+		else{
+			for(int j = i+1; j < size && !found; j++)
+				if(thereIsACycle(v[i], v[j], l))
+					found = true;
+		}
 	}
 
 	return found;
@@ -93,17 +114,9 @@ vector<Edge> SecondAprox(vector<vector<double>> distances, vector<Location> loca
             edges.emplace_back(locations[i], locations[j]);
         }
     }
-	cout << "Before:" << endl;
-	for(auto p : edges){
-		cout << "(" << p.A.x << ", " << p.A.y << ")" << endl; 
-		cout << "(" << p.B.x << ", " << p.B.y << ")" << endl; 
-	}
+	
+	//Ordenamos el vector de aristas de menor a mayor
     sort(edges.begin(), edges.end());
-	cout << "After:" << endl;
-	for(auto p : edges){
-		cout << "(" << p.A.x << ", " << p.A.y << ")" << endl; 
-		cout << "(" << p.B.x << ", " << p.B.y << ")" << endl; 
-	}
 
 	for(const auto e : edges){
 		if(path.size() == n-1)
@@ -171,10 +184,6 @@ int main(int argc, char *argv[]){
     auto transcurrido = duration_cast<duration<double>>(stop - start);
     cout << Customers.size() << "\t" << transcurrido.count() << endl;
 
-	for(auto p : pru){
-		cout << "(" << p.A.x << ", " << p.A.y << ")" << endl; 
-		cout << "(" << p.B.x << ", " << p.B.y << ")" << endl; 
-	}
     //auto duration = duration_cast<seconds>(stop - start); // Cálculo de la duración en segundos
     //cout << "Tiempo de ejecución: " << duration.count() << " segundos." << endl;
 
