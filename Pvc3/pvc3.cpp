@@ -1,195 +1,210 @@
 #include <iostream>
+#include <vector>
+#include <algorithm>
 #include <cmath>
 #include <fstream>
-#include <string>
-#include <vector>
-#include <queue>
-#include <algorithm>
 #include <chrono>
+#include <set>
 
 using namespace std;
 using namespace std::chrono;
 
+
 struct Location
 {
-    int x, y;
-
-	//Constructores
-    Location(int a, int b) : x(a), y(b) {}
-    Location() : x(0), y(0) {}
-
-	//Operadores
-    bool operator==(const Location& p) const{
+    int x;
+    int y;
+    bool operator==(const Location& p) {
         return (p.x == x) && (p.y == y);
     }
-
-	bool operator!=(const Location& p) const {
-        return (p.x != x) || (p.y != y);
+    bool operator<(const Location &other) const        // Sobrecargamos el operador < con la semántica siguiente:
+    {                                               // un punto p1 es menor que otro punto p2 si p1 está mas abajo,
+        if (y != other.y)                           // es decir, tiene componente y menor. En caso de empate, 
+        {                                           // se escoge el que esté más a la izquierda (componente x menor).
+            return y < other.y;
+        }
+        else
+        {
+            return x < other.x;
+        }
     }
+    bool operator!=(const Location &other) const       // Sobrecargamos el operador !=
+    {
+
+        return ((x != other.x) || (y != other.y));
+    }
+    Location(int a, int b) : x(a), y(b) {}
+    Location() : x(0), y(0) {}
 };
 
-// Dadas dos localizaciones, calcula la distancia.
-double distance(Location A, Location B){
-    
-    double distancia_x = B.x - A.x;
-    double distancia_y = B.y - A.y;
-    double distancia = sqrt(pow(distancia_x, 2) + pow(distancia_y, 2));
-    
-    return distancia;
-}
+enum Orientation{
+    ALIGNED,
+    CLOCKWISE,
+    COUNTERCLOCKWISE
+};
 
-struct Edge
+// Dado un vector de puntos, devuelve el menor punto (ver sobrecarga operador <).
+Location FirstLocation(vector<Location> &v)
 {
-	Location A, B;
-	double distancia;
-
-	//Constructores
-	Edge() : A(), B(), distancia(0) {}
-	Edge (Location a, Location b) :
-		A(a), B(b), distancia(distance(A, B)) {}
-
-	//Operadores
-	bool operator==(const Edge& p) const {
-        return (p.A == A) && (p.B == B);
-    }
-
-	bool operator!=(const Edge& p) const {
-        return (p.A != A) || (p.B != B);
-    }
-
-};
-
-//Operadores para ordenar. Comprueba si el elemento más a la derecha es menor
-// que el elemento más a la izquierda
-bool operator<(const Edge& lhs, const Edge& rhs) {
-	return rhs.distancia < lhs.distancia;
+    Location first_p = *min_element(v.begin(), v.end());
+    return first_p;
 }
+
+// Devuelve la orientación relativa entre 3 puntos. Devuelve un valor del tipo de dato enumerado Orientation.
+Orientation orientation(const Location p, const Location q, const Location r)
+{
+    int val = (q.y - p.y) * (r.x - q.x) -               // Para evitar el cálculo del ángulo, podemos hallar el
+              (q.x - p.x) * (r.y - q.y);                // producto vectorial de los dos vectores que se definen.
+
+    if (val == 0)
+    {
+
+        return ALIGNED;                                  // Puntos alineados
+    }
+    else
+    {
+
+        return (val > 0) ? CLOCKWISE : COUNTERCLOCKWISE; // Sentido horario o antihorario
+    }
+}
+
+// Devuelve la distancia entre dos puntos.
+double distance(Location a, Location b)
+{
+    int x_c = b.x - a.x;
+    int y_c = b.y - a.y;
+    return sqrt(x_c * x_c + y_c * y_c);
+}
+
+// Compara dos puntos según el ángulo que forman el eje horizontal y la recta que pasa por
+// cada punto y un punto fijo (p0).
+int compare_by_orientation(Location p1, Location p2, Location p0)
+{
+
+    Orientation o = orientation(p0, p1, p2);          // Hallamos la orientación de los puntos.
+    if (o == ALIGNED)
+    {
+        // Si los puntos están alineados, devuelve el que está más lejos del punto de referencia
+        if (distance(p0, p2) >= distance(p0, p1))
+        {
+            return -1;
+        }
+        else
+        {
+            return 1;
+        }
+    }
+    else
+    {
+        // Si los puntos no están en la misma línea, devuelve el que está a la izquierda en relación al punto de referencia
+        if (o == COUNTERCLOCKWISE)
+        {
+            return -1;
+        }
+        else
+        {
+            return 1;
+        }
+    }
+}
+
+// Ordena un vector según la función anterior.
+void sort_by_orientation(vector<Location> &Locations, const Location &P)
+{
+
+    sort(Locations.begin(), Locations.end(), [&](const Location &p1, const Location &p2)
+                                        { return compare_by_orientation(p1, p2, P) < 0; });
+}
+
+// Calcula el polígono convexo que contine a todos los puntos de un vector.
+vector<Location> Convex_Polygon(vector<Location> &Locations)
+{
+
+    if (Locations.size() <= 3) {               // Si hay menos de tres puntos, devolvemos el mismo vector.
+        return Locations;
+    }
+
+    vector<Location> aux;                      // Vector auxiliar
+    Location p0 = FirstLocation(Locations);          // Hallamos el punto más abajo (más a la izquierda en caso de empate)
+
+    for (int i = 0; i < Locations.size(); i++) // Copiamos los demás puntos en el vector auxiliar
+    {
+        if (Locations[i] != p0)
+        {
+            aux.push_back(Locations[i]);
+        }
+    }
+
+    sort_by_orientation(aux, p0);           // Ordenamos según el ángulo que forme cada punto con el punto de referencia
+
+    aux.insert(aux.begin(), p0);            // Colocamos p0 en la primera posición
+
+    vector<Location> convex_polygon;           // Vector con los puntos que forman el polígono convexo
+
+    convex_polygon.push_back(aux[0]);       // Añadimos los tres primeros puntos del vector auxiliar
+    convex_polygon.push_back(aux[1]);
+    convex_polygon.push_back(aux[2]);
+
+    for (int i = 3; i < aux.size(); i++)    // Para el resto del vector
+    {
+        // Si el ángulo que forman los puntos aux[i] y los dos últimos ángulos de convex_polygon
+        // hace un giro en sentido horario o los puntos están alineados, eliminamos el último elemento de 
+        // convex_polygon.
+
+        while (orientation(convex_polygon[convex_polygon.size() - 2], convex_polygon.back(), aux[i]) != 2){
+            
+            convex_polygon.pop_back();
+        }
+        convex_polygon.push_back(aux[i]);
+    }
+
+    return convex_polygon;
+}
+
 
 // Dado un vector de Locations y una Location, elimina las apariciones de Location del vector.
 void eliminate(vector<Location>& v, const Location& l) {
-    v.erase(find(v.begin(), v.end(), l));
+    v.erase(remove(v.begin(), v.end(), l), v.end());
 }
 
-void eliminate(vector<vector<Edge>>& v, const Edge& l) {
-	int i = 0;
-	Edge e(l.B, l.A);
-	while(i < v.size() && (v[i][0].A != l.A || v[i][0].B != l.B)){
-		if(v[i][0].A == l.A )
-    		v[i].erase(find(v[i].begin(), v[i].end(), l));
-
-		if(v[i][0].B == l.B )
-			v[i].erase(find(v[i].begin(), v[i].end(), e));
-		i++;
-	}
-    
+// Dado dos vectores de Locations, elimina del primero las apariciones de los elementos del segundo.
+void eliminateVector(vector<Location>& v, vector<Location>& e) {
+    for(int i = 0; i< e.size(); i++){
+        v.erase(remove(v.begin(), v.end(), e[i]), v.end());
+    }
 }
 
-// Dado un vector de Edges, devuelve la arista más pequeña
-Edge getMinEdge(vector<Edge> v){
+// Dado un vector de Locations, busca la Location más cerca a otra Location suministrada.
+Location closestLocation (Location A, vector<Location> v){
 
-	cout << v.size() << endl;
-	Edge min = v[0];
-	if(min.distancia == 0) min = v[1];
-
-	for(auto i : v){
-		if(i.distancia < min.distancia && i.distancia != 0 )
-			min = i;
-	}
-	cout << "MIN: " << min.distancia << endl;
-
-	return min;
-}
-
-// Dado una matriz de Edges y un vector de Location, busca la arista de la matriz 
-// más cercana a cualquiera de las localizaciones del vector.
-Edge shortestEdgeToLocations (vector<Location> locations, vector<vector<Edge>> m){
-
-    priority_queue<Edge> shortestEdges;
-
-    for (int i = 0; i < locations.size(); i++) {
-		int j = 0; 
-
-		//Nos posicionamos en la fila correspondiente a la localización A respecto
-		// de la cual buscaremos la localización que tiene más cerca
-		while(j < m.size() && m[j][0].A != locations[i])
-			j++;
-
-		shortestEdges.push(getMinEdge(m[j]));
+    Location closest = v[0];
+    for (auto i : v) {
+        if(distance(i, A) < distance(closest, A)){
+            closest = i;
+        }
     }
 
-    return shortestEdges.top();
+    return closest;
 }
 
-// Dado un vector de Locations, busca la distancia mínimo entre dos Location
-Edge shortestEdge (vector<vector<Edge>> m){
+// Tercera heurística
+vector<Location> SecondAprox(vector<Location> &v){
 
-	priority_queue<Edge> shortestEdges;
-	double d;
+    vector<Location> convex_polygon = Convex_Polygon(v);
+    vector<Location> result;
+    result = convex_polygon;
 
-    for (int i = 0; i < m.size(); i++) {
-		cout << "H:" << m[i].size() << endl;
-		shortestEdges.push(getMinEdge(m[i]));
+    // Eliminamos de v los lementos que ya tenemos procesados
+    eliminateVector(v, convex_polygon);
+
+    // Mientras queden elementos, aplicamos la primera heurística
+    while(!v.empty()){
+        Location c = closestLocation(result.back(), v);
+        result.push_back(c);
+        eliminate(v, c);
     }
 
-    return shortestEdges.top();
-}
-
-//Dado un vector de Location y una matriz de Edge, inserta la localización 
-// suministrada tal que la distancia entre los dos puntos entre los que se coloca 
-// sea la minima
-void insertSorted(vector<Location> &v, vector<vector<Edge>> m, Location l){
-	vector<double> distancias;
-
-	for(auto p : v)
-		distancias.push_back(distance(p,l));
-	
-	//cout << "Before : " << v.size() << endl;
-	// Buscar la posición de inserción
-	double d = distancias[0];
-	int pos = 0;
-	for(int i = 0; i < distancias.size(); i++){
-		if(distancias[i] < d){
-			pos = i;
-			d = distancias[i];
-		}
-			
-	}
-
-    // Insertar el nuevo elemento en la posición correspondiente
-    v.insert(v.begin()+pos,l);
-	//cout << "After : " << v.size() << endl;
-}
-
-// Tercera heurística. Elegimos la localización más cercana de donde nos encontremos.
-vector<Location> ThirdAprox(vector<vector<Edge>> customers){
-
-    vector<Location> path;
-
-	//Buscamos la arista más corta entre todas las ciudades y hacemos una 
-	// subruta inicial
-	Edge edge = shortestEdge(customers);
-	cout << "PASO" << endl;
-	path.push_back(edge.A);
-	path.push_back(edge.B);
-
-	cout << "(" << edge.A.x << ", " << edge.A.y << ")" << endl; 
-	cout << "(" << edge.B.x << ", " << edge.B.y << ")" << endl; 
-	eliminate(customers, edge);
-	cout << "ELIMINATED" << endl;
-
-	//cout << "HOLA" << endl;
-    while(!customers.empty() && path.size() < customers.size()){
-
-		edge = shortestEdgeToLocations(path, customers);
-		cout << "(" << edge.A.x << ", " << edge.A.y << ")" << endl; 
-		cout << "(" << edge.B.x << ", " << edge.B.y << ")" << endl; 
-		insertSorted(path, customers, edge.B);
-		//cout << "HOLA2" << endl;
-		eliminate(customers, edge);
-		//cout << "HOLA3 " << customers.size()  << " " << path.size() << endl;
-    }
-
-    return path;
+    return result;
 }
 
 int main(int argc, char *argv[]){
@@ -214,45 +229,19 @@ int main(int argc, char *argv[]){
 
     // Leer las localizaciones de los clientes
     vector<Location> Customers;
-	Customers.push_back(Company);
     while (file >> x >> y) {
         Location customer(x, y);
         Customers.push_back(customer);
     }
 
-	//Creamos una matriz de aristas
-	vector<vector<Edge>> grafo;
-	vector<Edge> fila;
-	Edge arista;
-
-	for(int i = 0; i < Customers.size(); i++){
-		arista.A = Customers[i];
-		for(int j = 0; j < Customers.size(); j++){
-			arista.B = Customers[j]; 
-			arista.distancia = distance(arista.A, arista.B);
-
-			fila.push_back(arista);
-			cout << "Fila " << i << " " << fila.size() << endl;
-		}
-		grafo.push_back(fila);
-		fila.clear();
-	}
-	cout << "TAM GRAPH: " << grafo.size() << endl; 
-
-    vector<Location> pru;
+    vector<Location> proof;
 
     auto start = high_resolution_clock::now(); // Marca de tiempo inicial
-    pru = ThirdAprox(grafo);
+    proof = SecondAprox(Customers);
     auto stop = high_resolution_clock::now(); // Marca de tiempo final
 
-    auto transcurrido = duration_cast<duration<double>>(stop - start);
-    cout << Customers.size() << "\t" << transcurrido.count() << endl;
-
-	for(auto p : pru){
-		cout << "(" << p.x << ", " << p.y << ")" << endl; 
-	}
-    //auto duration = duration_cast<seconds>(stop - start); // Cálculo de la duración en segundos
-    //cout << "Tiempo de ejecución: " << duration.count() << " segundos." << endl;
+    auto duration = duration_cast<seconds>(stop - start); // Cálculo de la duración en segundos
+    cout << "Tiempo de ejecución: " << duration.count() << " segundos." << endl;
 
     return 0;
 }
